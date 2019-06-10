@@ -19,6 +19,7 @@ public class Utama extends javax.swing.JFrame {
     JFileChooser jfc = new JFileChooser();
     FileNameExtensionFilter filter = new FileNameExtensionFilter("xls atau xlsx file", "xls", "xlsx");
     private String pathFile;
+    private String pathFolder;
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -124,23 +125,18 @@ public class Utama extends javax.swing.JFrame {
             File selectedFile = jfc.getSelectedFile();
             lblFile.setText(selectedFile.getName());
             pathFile = selectedFile.getPath();
+            pathFolder = selectedFile.getParent();
         }
     }//GEN-LAST:event_btnBrowseActionPerformed
 
     private void btnKonversiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnKonversiActionPerformed
         if(pathFile!=null){
             Mesin konversi = new Mesin();
-            try {
-                konversi.inputExcelKeSQL(pathFile);
-                konversi.inputPemasaranKeSQL();
-//                konversi.MatKul();
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(Utama.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SQLException ex) {
-                Logger.getLogger(Utama.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(Utama.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            konversi.clearAll();
+            konversi.inputExcelKeSQL(pathFile);
+            konversi.inputPemasaranKeSQL();
+            konversi.eksekusi();
+            konversi.exportSQLkeXLSX(pathFolder);
             JOptionPane.showMessageDialog(this, "Konversi berhasil! Silakan cek di direktori yang sama dengan file asal.", "Berhasil", JOptionPane.INFORMATION_MESSAGE);
         }else{
             JOptionPane.showMessageDialog(this, "Konversi gagal! Silakan cek kembali file anda sesuai format akademik.","Gagal",JOptionPane.INFORMATION_MESSAGE);

@@ -10,6 +10,8 @@ public class Koneksi {
     private final String db = "akademik";
     private final String user = "root";
     private final String pass = "";
+    private PreparedStatement ps;
+    private ResultSet rs;
 
     public Koneksi() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.jdbc.Driver");
@@ -20,6 +22,19 @@ public class Koneksi {
 
     public void eksekusi(String sql) throws SQLException {
         stmt.execute(sql);
+    }
+    
+    public void select(String sql) throws SQLException{
+        ps = con.prepareStatement(sql);
+        rs = ps.executeQuery();
+    }
+    
+    public boolean tampilData() throws SQLException{
+        return rs.next();
+    }
+    
+    public ResultSet rs(){
+        return rs;
     }
 
     public void tutup() throws SQLException {
