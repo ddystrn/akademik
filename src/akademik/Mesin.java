@@ -1,11 +1,13 @@
 package akademik;
 
 import java.io.*;
+import java.net.*;
+import java.nio.file.*;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
+import javax.swing.JOptionPane;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
@@ -13,6 +15,7 @@ import org.apache.poi.ss.usermodel.*;
 public class Mesin {
 
     private final String pemasaran = "Rule Konversi.xlsx";
+    private final String online = "https://github.com/ddystrn/akademik/raw/master/Rule%20Konversi.xlsx";
     private String nim;
 
     public void inputExcelKeSQL(String pathFile) {
@@ -147,7 +150,8 @@ public class Mesin {
             k.eksekusi(tabelMahasiswa);
             k.eksekusi(tabelPemasaran);
             k.tutup();
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (ClassNotFoundException | SQLException ex) {
+            popup("SQL belum aktif.");
         }
     }
 
@@ -260,7 +264,7 @@ public class Mesin {
                 ipkCell.setCellValue(ipk);
             }
 
-            String outputDirPath = pathFolder+"\\"+ nim + " " + f.format(date) + ".xls";
+            String outputDirPath = pathFolder + "\\" + nim + " " + f.format(date) + ".xls";
             try (FileOutputStream fileOut = new FileOutputStream(outputDirPath)) {
                 wb.write(fileOut);
             } catch (FileNotFoundException ex) {
@@ -268,9 +272,52 @@ public class Mesin {
             } catch (IOException ex) {
                 Logger.getLogger(Mesin.class.getName()).log(Level.SEVERE, null, ex);
             }
+            popup("Konversi berhasil! Silakan cek di direktori yang sama dengan file asal.");
         } catch (ClassNotFoundException | SQLException ex) {
             Logger.getLogger(Mesin.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public void checkUpdate() {
+        try {
+            File p = new File(pemasaran);
+            URL o = new URL(online);
+            if (p.length() != getFileSize(o)) {
+                try {
+                    InputStream in = new URL(online).openStream();
+                    Files.copy(in, Paths.get(pemasaran), StandardCopyOption.REPLACE_EXISTING);
+                    popup("Berhasil update database.");
+                } catch (IOException e) {
+                }
+            } else {
+                popup("Tidak ada update.");
+            }
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Mesin.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void popup(String message) {
+        JOptionPane.showMessageDialog(null, message);
+    }
+
+    private int getFileSize(URL url) {
+        URLConnection con = null;
+        try {
+            con = url.openConnection();
+            if (con instanceof HttpURLConnection) {
+                ((HttpURLConnection) con).setRequestMethod("HEAD");
+            }
+            con.getInputStream();
+            return con.getContentLength();
+        } catch (IOException e) {
+            popup("Tidak ada koneksi internet.");
+        } finally {
+            if (con instanceof HttpURLConnection) {
+                ((HttpURLConnection) con).disconnect();
+            }
+        }
+        return 0;
     }
 
     private String getCellValueAsString(Cell cell) {
@@ -286,7 +333,7 @@ public class Mesin {
                     strCellValue = longvalue.toString();
                     break;
                 case BOOLEAN:
-                    strCellValue = new String(new Boolean(cell.getBooleanCellValue()).toString());
+                    strCellValue = Boolean.toString(cell.getBooleanCellValue());
                     break;
                 case BLANK:
                     strCellValue = "";

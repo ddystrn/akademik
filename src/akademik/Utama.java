@@ -1,8 +1,6 @@
 package akademik;
 
 import java.io.*;
-import java.sql.SQLException;
-import java.util.logging.*;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -126,6 +124,7 @@ public class Utama extends javax.swing.JFrame {
             lblFile.setText(selectedFile.getName());
             pathFile = selectedFile.getPath();
             pathFolder = selectedFile.getParent();
+            System.out.println(selectedFile.length());
         }
     }//GEN-LAST:event_btnBrowseActionPerformed
 
@@ -137,14 +136,15 @@ public class Utama extends javax.swing.JFrame {
             konversi.inputPemasaranKeSQL();
             konversi.eksekusi();
             konversi.exportSQLkeXLSX(pathFolder);
-            JOptionPane.showMessageDialog(this, "Konversi berhasil! Silakan cek di direktori yang sama dengan file asal.", "Berhasil", JOptionPane.INFORMATION_MESSAGE);
         }else{
-            JOptionPane.showMessageDialog(this, "Konversi gagal! Silakan cek kembali file anda sesuai format akademik.","Gagal",JOptionPane.INFORMATION_MESSAGE);
+            Mesin konversi = new Mesin();
+            konversi.popup("Masukkan file KHS.");
         }
     }//GEN-LAST:event_btnKonversiActionPerformed
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
-        JOptionPane.showMessageDialog(this, "Update selesai!", "Berhasil", JOptionPane.INFORMATION_MESSAGE);
+        Mesin konversi = new Mesin();
+        konversi.checkUpdate();
     }//GEN-LAST:event_btnUpdateActionPerformed
 
     /**
