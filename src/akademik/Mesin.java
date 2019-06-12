@@ -79,7 +79,7 @@ public class Mesin {
                 int startFrom = 5;
                 String sqlmahasiswa = "INSERT INTO MAHASISWA VALUES('" + nim + "','" + nama + "','" + ipk + "')";
                 k.eksekusi(sqlmahasiswa);
-                for (int i = startFrom - 1; i <= s.getLastRowNum() - 7; i++) {
+                for (int i = startFrom - 1; i <= s.getLastRowNum() - 3; i++) {
                     row = s.getRow(i);
 
                     int kode_mk = (int) row.getCell(1).getNumericCellValue();
@@ -160,11 +160,7 @@ public class Mesin {
     public void eksekusi() {
         try {
             Koneksi k = new Koneksi();
-            String lulus = "INSERT INTO konversi SELECT k.nim_mhs,"
-                    + " p.kode_mk_alias, p.nama_mk_alias, p.sks_alias,"
-                    + " k.nilai_angka, k.nilai_huruf, k.sks_nilai_angka from khs"
-                    + " k JOIN pemasaran p ON k.kode_mk = p.kode_mk WHERE"
-                    + " k.nilai_angka < '2.0' GROUP BY p.kode_mk_alias";
+            String lulus = "INSERT INTO konversi SELECT * FROM (SELECT k.nim_mhs, p.kode_mk_alias, p.nama_mk_alias, p.sks_alias, max(k.nilai_angka) as nilai_angka, min(k.nilai_huruf) as nilai_huruf, k.sks_nilai_angka from khs k JOIN pemasaran p ON k.kode_mk = p.kode_mk GROUP BY p.kode_mk_alias) AS tabel WHERE nilai_angka < '2.0'";
             k.eksekusi(lulus);
             String hapusPemasaran = "DELETE p from pemasaran p join (SELECT kode_mk_alias FROM"
                     + " pemasaran p2 WHERE kode_mk IN (SELECT kode_mk FROM khs)) pp"
