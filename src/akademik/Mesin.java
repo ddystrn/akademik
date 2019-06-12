@@ -25,11 +25,10 @@ public class Mesin {
     private String pathFolder;
 
     //awal proses konversi
-    
     public void jalankanMethod() {
         clearAll();
     }
-    
+
     public void clearAll() {
         try {
             Koneksi k = new Koneksi();
@@ -47,7 +46,7 @@ public class Mesin {
             popup(ex.getMessage());
         }
     }
-    
+
     public void inputExcelKeSQL() {
         try {
             System.out.println("===== Mulai input excel khs ke sql =====");
@@ -66,9 +65,15 @@ public class Mesin {
                 Row nimrow = s.getRow(0);
                 Row namarow = s.getRow(1);
                 Row ipkrow = s.getRow(s.getLastRowNum() - 1);
-                nim = nimrow.getCell(1).getStringCellValue().replace(": ", "");
-                String nama = ((namarow.getCell(1).getStringCellValue()).replace(": ", "")).replace("'", "`");
-                double ipk = ipkrow.getCell(3).getNumericCellValue();
+                String nama = null;
+                double ipk = 0;
+                try {
+                    nim = nimrow.getCell(1).getStringCellValue().replace(": ", "");
+                    nama = ((namarow.getCell(1).getStringCellValue()).replace(": ", "")).replace("'", "`");
+                    ipk = ipkrow.getCell(3).getNumericCellValue();
+                } catch (Exception e) {
+                    popup(e.getMessage());
+                }
                 int startFrom = 5;
                 String sqlmahasiswa = "INSERT INTO MAHASISWA VALUES('" + nim + "','" + nama + "','" + ipk + "')";
                 k.eksekusi(sqlmahasiswa);
@@ -95,7 +100,7 @@ public class Mesin {
             popup(e.getMessage());
         }
     }
-    
+
     public void inputPemasaranKeSQL() {
         try {
             System.out.println("===== Mulai input excel pemasaran ke sql =====");
@@ -147,7 +152,7 @@ public class Mesin {
             popup(ex.getMessage());
         }
     }
-    
+
     public void eksekusi() {
         try {
             Koneksi k = new Koneksi();
@@ -168,7 +173,7 @@ public class Mesin {
             popup(e.getMessage());
         }
     }
-    
+
     public void mataKuliahPilihan() {
         try {
             Koneksi k = new Koneksi();
@@ -176,7 +181,7 @@ public class Mesin {
             BufferedReader mkPilihan = null;
             for (int p = 1; p <= 2; p++) {
                 try {
-                    mkPilihan = new BufferedReader(new FileReader("mkpilihan"+p+".txt"));
+                    mkPilihan = new BufferedReader(new FileReader("mkpilihan" + p + ".txt"));
                     String str;
                     List<String> l = new ArrayList<String>();
                     while ((str = mkPilihan.readLine()) != null) {
@@ -184,7 +189,7 @@ public class Mesin {
                     }
                     String[] pemasaran = l.toArray(new String[0]);
                     List<String> m = new ArrayList<String>();
-                    System.out.println("Kode MK Pilihan "+p+" Pemasaran:");
+                    System.out.println("Kode MK Pilihan " + p + " Pemasaran:");
                     for (int i = 0; i < pemasaran.length; i++) {
                         String sql = "SELECT kode_mk_alias from pemasaran where kode_mk_alias='" + pemasaran[i] + "' group by kode_mk_alias";
                         k.select(sql);
@@ -194,7 +199,7 @@ public class Mesin {
                         System.out.println(pemasaran[i]);
                     }
                     khs = m.toArray(new String[0]);
-                    System.out.println("Kode MK Pilihan "+p+" KHS:");
+                    System.out.println("Kode MK Pilihan " + p + " KHS:");
                     for (int i = 0; i < khs.length; i++) {
                         System.out.println(khs[i]);
                     }
@@ -225,7 +230,7 @@ public class Mesin {
             popup(ex.getMessage());
         }
     }
-    
+
     public void konversi() {
         try {
             Koneksi k = new Koneksi();
@@ -366,7 +371,6 @@ public class Mesin {
     }
 
     //batas proses konversi
-    
     public void checkUpdate() {
         try {
             File p = new File(pemasaran);
@@ -375,7 +379,7 @@ public class Mesin {
             URL o = new URL(online);
             URL o1 = new URL(online1);
             URL o2 = new URL(online2);
-            if ((p.length() == getFileSize(o))&&(p1.length() == getFileSize(o1))&&(p2.length() == getFileSize(o2))) {
+            if ((p.length() == getFileSize(o)) && (p1.length() == getFileSize(o1)) && (p2.length() == getFileSize(o2))) {
                 popup("Tidak ada update.");
             } else {
                 try {
@@ -397,12 +401,12 @@ public class Mesin {
     public void popup(String message) {
         JOptionPane.showMessageDialog(null, message);
     }
-    
-    public void setPathFile(String pathFile){
+
+    public void setPathFile(String pathFile) {
         this.pathFile = pathFile;
     }
-    
-    public void setPathFolder(String pathFolder){
+
+    public void setPathFolder(String pathFolder) {
         this.pathFolder = pathFolder;
     }
 
