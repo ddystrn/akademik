@@ -21,8 +21,34 @@ public class Mesin {
     private final String online1 = "https://raw.githubusercontent.com/ddystrn/akademik/master/mkpilihan1.txt";
     private final String online2 = "https://raw.githubusercontent.com/ddystrn/akademik/master/mkpilihan2.txt";
     private String nim;
+    private String pathFile;
+    private String pathFolder;
 
-    public void inputExcelKeSQL(String pathFile) {
+    //awal proses konversi
+    
+    public void jalankanMethod() {
+        clearAll();
+    }
+    
+    public void clearAll() {
+        try {
+            Koneksi k = new Koneksi();
+            String tabelKhs = "DELETE FROM khs";
+            String tabelKonversi = "DELETE FROM konversi";
+            String tabelMahasiswa = "DELETE FROM mahasiswa";
+            String tabelPemasaran = "DELETE FROM pemasaran";
+            k.eksekusi(tabelKhs);
+            k.eksekusi(tabelKonversi);
+            k.eksekusi(tabelMahasiswa);
+            k.eksekusi(tabelPemasaran);
+            k.tutup();
+            inputExcelKeSQL();
+        } catch (ClassNotFoundException | SQLException ex) {
+            popup(ex.getMessage());
+        }
+    }
+    
+    public void inputExcelKeSQL() {
         try {
             System.out.println("===== Mulai input excel khs ke sql =====");
             Sheet s = null;
@@ -64,11 +90,12 @@ public class Mesin {
             }
             System.out.println("Berhasil impor excel khs ke tabel sql");
             System.out.println("===== Selesai input excel ke sql =====");
+            inputPemasaranKeSQL();
         } catch (IOException | ClassNotFoundException | SQLException e) {
             popup(e.getMessage());
         }
     }
-
+    
     public void inputPemasaranKeSQL() {
         try {
             System.out.println("===== Mulai input excel pemasaran ke sql =====");
@@ -115,11 +142,12 @@ public class Mesin {
             }
             System.out.println("Berhasil impor excel pemasaran ke tabel sql");
             System.out.println("===== Selesai input excel pemasaran ke sql =====");
+            eksekusi();
         } catch (ClassNotFoundException | SQLException ex) {
             popup(ex.getMessage());
         }
     }
-
+    
     public void eksekusi() {
         try {
             Koneksi k = new Koneksi();
@@ -135,11 +163,69 @@ public class Mesin {
             k.eksekusi(hapusPemasaran);
             k.tutup();
             System.out.println("Berhasil konversi mata kuliah belum lulus");
+            mataKuliahPilihan();
         } catch (ClassNotFoundException | SQLException e) {
             popup(e.getMessage());
         }
     }
-
+    
+    public void mataKuliahPilihan() {
+        try {
+            Koneksi k = new Koneksi();
+            String[] khs = null;
+            BufferedReader mkPilihan = null;
+            for (int p = 1; p <= 2; p++) {
+                try {
+                    mkPilihan = new BufferedReader(new FileReader("mkpilihan"+p+".txt"));
+                    String str;
+                    List<String> l = new ArrayList<String>();
+                    while ((str = mkPilihan.readLine()) != null) {
+                        l.add(str);
+                    }
+                    String[] pemasaran = l.toArray(new String[0]);
+                    List<String> m = new ArrayList<String>();
+                    System.out.println("Kode MK Pilihan "+p+" Pemasaran:");
+                    for (int i = 0; i < pemasaran.length; i++) {
+                        String sql = "SELECT kode_mk_alias from pemasaran where kode_mk_alias='" + pemasaran[i] + "' group by kode_mk_alias";
+                        k.select(sql);
+                        while (k.tampilData()) {
+                            m.add(k.rs().getString("kode_mk_alias"));
+                        }
+                        System.out.println(pemasaran[i]);
+                    }
+                    khs = m.toArray(new String[0]);
+                    System.out.println("Kode MK Pilihan "+p+" KHS:");
+                    for (int i = 0; i < khs.length; i++) {
+                        System.out.println(khs[i]);
+                    }
+                    if (Arrays.equals(pemasaran, khs)) {
+                        System.out.println("Sama");
+                    } else {
+                        System.out.println("Tidak sama");
+                        for (int i = 0; i < khs.length; i++) {
+                            String sql = "DELETE FROM pemasaran WHERE kode_mk_alias='" + khs[i] + "'";
+                            k.eksekusi(sql);
+                        }
+                    }
+                } catch (FileNotFoundException ex) {
+                    popup(ex.getMessage());
+                } catch (IOException ex) {
+                    popup(ex.getMessage());
+                } finally {
+                    try {
+                        mkPilihan.close();
+                    } catch (IOException ex) {
+                        popup(ex.getMessage());
+                    }
+                }
+            }
+            k.tutup();
+            konversi();
+        } catch (ClassNotFoundException | SQLException ex) {
+            popup(ex.getMessage());
+        }
+    }
+    
     public void konversi() {
         try {
             Koneksi k = new Koneksi();
@@ -150,30 +236,13 @@ public class Mesin {
                     + " GROUP by p.kode_mk_alias";
             k.eksekusi(eksekusi);
             k.tutup();
+            exportSQLkeXLSX();
         } catch (ClassNotFoundException | SQLException ex) {
             popup(ex.getMessage());
         }
     }
 
-    public void clearAll() {
-        try {
-            Koneksi k = new Koneksi();
-            String tabelKhs = "DELETE FROM khs";
-            String tabelKonversi = "DELETE FROM konversi";
-            String tabelMahasiswa = "DELETE FROM mahasiswa";
-            String tabelPemasaran = "DELETE FROM pemasaran";
-            k.eksekusi(tabelKhs);
-            k.eksekusi(tabelKonversi);
-            k.eksekusi(tabelMahasiswa);
-            k.eksekusi(tabelPemasaran);
-            k.tutup();
-        } catch (ClassNotFoundException | SQLException ex) {
-            popup(ex.getMessage());
-            System.exit(1);
-        }
-    }
-
-    public void exportSQLkeXLSX(String pathFolder) {
+    public void exportSQLkeXLSX() {
         try {
             Workbook wb = new HSSFWorkbook();
             Koneksi k = new Koneksi();
@@ -296,6 +365,8 @@ public class Mesin {
         }
     }
 
+    //batas proses konversi
+    
     public void checkUpdate() {
         try {
             File p = new File(pemasaran);
@@ -323,64 +394,16 @@ public class Mesin {
         }
     }
 
-    public void mataKuliahPilihan() {
-        try {
-            Koneksi k = new Koneksi();
-            String[] khs = null;
-            BufferedReader mkPilihan = null;
-            for (int p = 1; p <= 2; p++) {
-                try {
-                    mkPilihan = new BufferedReader(new FileReader("mkpilihan"+p+".txt"));
-                    String str;
-                    List<String> l = new ArrayList<String>();
-                    while ((str = mkPilihan.readLine()) != null) {
-                        l.add(str);
-                    }
-                    String[] pemasaran = l.toArray(new String[0]);
-                    List<String> m = new ArrayList<String>();
-                    System.out.println("Kode MK Pilihan "+p+" Pemasaran:");
-                    for (int i = 0; i < pemasaran.length; i++) {
-                        String sql = "SELECT kode_mk_alias from pemasaran where kode_mk_alias='" + pemasaran[i] + "' group by kode_mk_alias";
-                        k.select(sql);
-                        while (k.tampilData()) {
-                            m.add(k.rs().getString("kode_mk_alias"));
-                        }
-                        System.out.println(pemasaran[i]);
-                    }
-                    khs = m.toArray(new String[0]);
-                    System.out.println("Kode MK Pilihan "+p+" KHS:");
-                    for (int i = 0; i < khs.length; i++) {
-                        System.out.println(khs[i]);
-                    }
-                    if (Arrays.equals(pemasaran, khs)) {
-                        System.out.println("Sama");
-                    } else {
-                        System.out.println("Tidak sama");
-                        for (int i = 0; i < khs.length; i++) {
-                            String sql = "DELETE FROM pemasaran WHERE kode_mk_alias='" + khs[i] + "'";
-                            k.eksekusi(sql);
-                        }
-                    }
-                } catch (FileNotFoundException ex) {
-                    popup(ex.getMessage());
-                } catch (IOException ex) {
-                    popup(ex.getMessage());
-                } finally {
-                    try {
-                        mkPilihan.close();
-                    } catch (IOException ex) {
-                        popup(ex.getMessage());
-                    }
-                }
-            }
-            k.tutup();
-        } catch (ClassNotFoundException | SQLException ex) {
-            popup(ex.getMessage());
-        }
-    }
-
     public void popup(String message) {
         JOptionPane.showMessageDialog(null, message);
+    }
+    
+    public void setPathFile(String pathFile){
+        this.pathFile = pathFile;
+    }
+    
+    public void setPathFolder(String pathFolder){
+        this.pathFolder = pathFolder;
     }
 
     private int getFileSize(URL url) {

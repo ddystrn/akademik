@@ -130,13 +130,9 @@ public class Utama extends javax.swing.JFrame {
     private void btnKonversiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnKonversiActionPerformed
         if(pathFile!=null){
             Mesin konversi = new Mesin();
-            konversi.clearAll();
-            konversi.inputExcelKeSQL(pathFile);
-            konversi.inputPemasaranKeSQL();
-            konversi.eksekusi();
-            konversi.mataKuliahPilihan();
-            konversi.konversi();
-            konversi.exportSQLkeXLSX(pathFolder);
+            konversi.setPathFile(pathFile);
+            konversi.setPathFolder(pathFolder);
+            konversi.jalankanMethod();
         }else{
             Mesin konversi = new Mesin();
             konversi.popup("Masukkan file KHS.");
