@@ -4,9 +4,10 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
+import java.text.*;
 import java.util.*;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -23,6 +24,7 @@ public class Mesin {
     private String nim;
     private String pathFile;
     private String pathFolder;
+    NumberFormat nf = NumberFormat.getInstance();
 
     //awal proses konversi
     public void jalankanMethod() {
@@ -83,15 +85,17 @@ public class Mesin {
                     int kode_mk = (int) row.getCell(1).getNumericCellValue();
                     String nama_mk = (row.getCell(2).getStringCellValue()).replace("'", "`");
                     int sks = (int) row.getCell(3).getNumericCellValue();
-                    double nilai_angka = row.getCell(4).getNumericCellValue();
+                    double nilai_angka = nf.parse(getCellValueAsString(row.getCell(4)).replace(".", ",")).doubleValue();
                     String nilai_huruf = row.getCell(5).getStringCellValue();
-                    double sks_nilai_angka = row.getCell(6).getNumericCellValue();
+                    double sks_nilai_angka = nf.parse(getCellValueAsString(row.getCell(6)).replace(".", ",")).doubleValue();
 
                     String sql = "INSERT INTO KHS VALUES('" + nim + "','" + kode_mk + "','" + nama_mk + "','" + sks + "','" + nilai_angka + "','" + nilai_huruf + "','" + sks_nilai_angka + "')";
                     k.eksekusi(sql);
                     System.out.println("Import row: " + kode_mk);
                 }
                 k.tutup();
+            } catch (ParseException ex) {
+                popup(ex.getMessage());
             }
             System.out.println("Berhasil impor excel khs ke tabel sql");
             System.out.println("===== Selesai input excel ke sql =====");
@@ -369,8 +373,8 @@ public class Mesin {
             popup(ex.getMessage());
         }
     }
-
     //batas proses konversi
+    
     public void checkUpdate() {
         try {
             File p = new File(pemasaran);

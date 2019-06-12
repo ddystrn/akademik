@@ -135,7 +135,7 @@ public class Utama extends javax.swing.JFrame {
             konversi.jalankanMethod();
         }else{
             Mesin konversi = new Mesin();
-            konversi.popup("Masukkan file KHS.");
+            konversi.popup("Masukkan file KHS terlebih dahulu sebelum menjalankan Konversi.");
         }
     }//GEN-LAST:event_btnKonversiActionPerformed
 
