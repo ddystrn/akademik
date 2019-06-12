@@ -15,7 +15,11 @@ import org.apache.poi.ss.usermodel.*;
 public class Mesin {
 
     private final String pemasaran = "Rule Konversi.xlsx";
+    private final String pemasaran1 = "mkpilihan1.txt";
+    private final String pemasaran2 = "mkpilihan2.txt";
     private final String online = "https://github.com/ddystrn/akademik/raw/master/Rule%20Konversi.xlsx";
+    private final String online1 = "https://raw.githubusercontent.com/ddystrn/akademik/master/mkpilihan1.txt";
+    private final String online2 = "https://raw.githubusercontent.com/ddystrn/akademik/master/mkpilihan2.txt";
     private String nim;
 
     public void inputExcelKeSQL(String pathFile) {
@@ -30,6 +34,7 @@ public class Mesin {
                     Workbook wb = WorkbookFactory.create(input);
                     s = wb.getSheetAt(0);
                 } catch (IOException | EncryptedDocumentException e) {
+                    popup(e.getMessage());
                 }
                 Row row;
                 Row nimrow = s.getRow(0);
@@ -60,6 +65,7 @@ public class Mesin {
             System.out.println("Berhasil impor excel khs ke tabel sql");
             System.out.println("===== Selesai input excel ke sql =====");
         } catch (IOException | ClassNotFoundException | SQLException e) {
+            popup(e.getMessage());
         }
     }
 
@@ -73,13 +79,14 @@ public class Mesin {
             try {
                 input = new FileInputStream(file);
             } catch (FileNotFoundException ex) {
-                Logger.getLogger(Mesin.class.getName()).log(Level.SEVERE, null, ex);
+                popup(ex.getMessage());
             }
             System.out.println("Path File: " + file);
             try {
                 Workbook wb = WorkbookFactory.create(input);
                 s = wb.getSheetAt(0);
             } catch (IOException | EncryptedDocumentException e) {
+                popup(e.getMessage());
             }
             Row row;
             int startFrom = 1;
@@ -104,12 +111,12 @@ public class Mesin {
             try {
                 input.close();
             } catch (IOException ex) {
-                Logger.getLogger(Mesin.class.getName()).log(Level.SEVERE, null, ex);
+                popup(ex.getMessage());
             }
             System.out.println("Berhasil impor excel pemasaran ke tabel sql");
             System.out.println("===== Selesai input excel pemasaran ke sql =====");
         } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(Mesin.class.getName()).log(Level.SEVERE, null, ex);
+            popup(ex.getMessage());
         }
     }
 
@@ -126,6 +133,16 @@ public class Mesin {
                     + " pemasaran p2 WHERE kode_mk IN (SELECT kode_mk FROM khs)) pp"
                     + " on p.kode_mk_alias = pp.kode_mk_alias";
             k.eksekusi(hapusPemasaran);
+            k.tutup();
+            System.out.println("Berhasil konversi mata kuliah belum lulus");
+        } catch (ClassNotFoundException | SQLException e) {
+            popup(e.getMessage());
+        }
+    }
+
+    public void konversi() {
+        try {
+            Koneksi k = new Koneksi();
             String eksekusi = "INSERT INTO konversi SELECT m.nim_mhs,"
                     + " p.kode_mk_alias, p.nama_mk_alias, p.sks_alias,"
                     + " null as nilai_angka, null as nilai_huruf,"
@@ -133,8 +150,8 @@ public class Mesin {
                     + " GROUP by p.kode_mk_alias";
             k.eksekusi(eksekusi);
             k.tutup();
-            System.out.println("Berhasil konversi mata kuliah belum lulus");
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (ClassNotFoundException | SQLException ex) {
+            popup(ex.getMessage());
         }
     }
 
@@ -151,7 +168,8 @@ public class Mesin {
             k.eksekusi(tabelPemasaran);
             k.tutup();
         } catch (ClassNotFoundException | SQLException ex) {
-            popup("SQL belum aktif.");
+            popup(ex.getMessage());
+            System.exit(1);
         }
     }
 
@@ -268,32 +286,96 @@ public class Mesin {
             try (FileOutputStream fileOut = new FileOutputStream(outputDirPath)) {
                 wb.write(fileOut);
             } catch (FileNotFoundException ex) {
-                Logger.getLogger(Mesin.class.getName()).log(Level.SEVERE, null, ex);
+                popup(ex.getMessage());
             } catch (IOException ex) {
-                Logger.getLogger(Mesin.class.getName()).log(Level.SEVERE, null, ex);
+                popup(ex.getMessage());
             }
             popup("Konversi berhasil! Silakan cek di direktori yang sama dengan file asal.");
         } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(Mesin.class.getName()).log(Level.SEVERE, null, ex);
+            popup(ex.getMessage());
         }
     }
 
     public void checkUpdate() {
         try {
             File p = new File(pemasaran);
+            File p1 = new File(pemasaran1);
+            File p2 = new File(pemasaran2);
             URL o = new URL(online);
-            if (p.length() != getFileSize(o)) {
+            URL o1 = new URL(online1);
+            URL o2 = new URL(online2);
+            if ((p.length() == getFileSize(o))&&(p1.length() == getFileSize(o1))&&(p2.length() == getFileSize(o2))) {
+                popup("Tidak ada update.");
+            } else {
                 try {
                     InputStream in = new URL(online).openStream();
                     Files.copy(in, Paths.get(pemasaran), StandardCopyOption.REPLACE_EXISTING);
+                    InputStream in1 = new URL(online1).openStream();
+                    Files.copy(in1, Paths.get(pemasaran1), StandardCopyOption.REPLACE_EXISTING);
+                    InputStream in2 = new URL(online2).openStream();
+                    Files.copy(in2, Paths.get(pemasaran2), StandardCopyOption.REPLACE_EXISTING);
                     popup("Berhasil update database.");
                 } catch (IOException e) {
                 }
-            } else {
-                popup("Tidak ada update.");
             }
         } catch (MalformedURLException ex) {
-            Logger.getLogger(Mesin.class.getName()).log(Level.SEVERE, null, ex);
+            popup(ex.getLocalizedMessage());
+        }
+    }
+
+    public void mataKuliahPilihan() {
+        try {
+            Koneksi k = new Koneksi();
+            String[] khs = null;
+            BufferedReader mkPilihan = null;
+            for (int p = 1; p <= 2; p++) {
+                try {
+                    mkPilihan = new BufferedReader(new FileReader("mkpilihan"+p+".txt"));
+                    String str;
+                    List<String> l = new ArrayList<String>();
+                    while ((str = mkPilihan.readLine()) != null) {
+                        l.add(str);
+                    }
+                    String[] pemasaran = l.toArray(new String[0]);
+                    List<String> m = new ArrayList<String>();
+                    System.out.println("Kode MK Pilihan "+p+" Pemasaran:");
+                    for (int i = 0; i < pemasaran.length; i++) {
+                        String sql = "SELECT kode_mk_alias from pemasaran where kode_mk_alias='" + pemasaran[i] + "' group by kode_mk_alias";
+                        k.select(sql);
+                        while (k.tampilData()) {
+                            m.add(k.rs().getString("kode_mk_alias"));
+                        }
+                        System.out.println(pemasaran[i]);
+                    }
+                    khs = m.toArray(new String[0]);
+                    System.out.println("Kode MK Pilihan "+p+" KHS:");
+                    for (int i = 0; i < khs.length; i++) {
+                        System.out.println(khs[i]);
+                    }
+                    if (Arrays.equals(pemasaran, khs)) {
+                        System.out.println("Sama");
+                    } else {
+                        System.out.println("Tidak sama");
+                        for (int i = 0; i < khs.length; i++) {
+                            String sql = "DELETE FROM pemasaran WHERE kode_mk_alias='" + khs[i] + "'";
+                            k.eksekusi(sql);
+                        }
+                    }
+                } catch (FileNotFoundException ex) {
+                    popup(ex.getMessage());
+                } catch (IOException ex) {
+                    popup(ex.getMessage());
+                } finally {
+                    try {
+                        mkPilihan.close();
+                    } catch (IOException ex) {
+                        popup(ex.getMessage());
+                    }
+                }
+            }
+            k.tutup();
+        } catch (ClassNotFoundException | SQLException ex) {
+            popup(ex.getMessage());
         }
     }
 

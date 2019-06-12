@@ -124,7 +124,6 @@ public class Utama extends javax.swing.JFrame {
             lblFile.setText(selectedFile.getName());
             pathFile = selectedFile.getPath();
             pathFolder = selectedFile.getParent();
-            System.out.println(selectedFile.length());
         }
     }//GEN-LAST:event_btnBrowseActionPerformed
 
@@ -135,6 +134,8 @@ public class Utama extends javax.swing.JFrame {
             konversi.inputExcelKeSQL(pathFile);
             konversi.inputPemasaranKeSQL();
             konversi.eksekusi();
+            konversi.mataKuliahPilihan();
+            konversi.konversi();
             konversi.exportSQLkeXLSX(pathFolder);
         }else{
             Mesin konversi = new Mesin();
