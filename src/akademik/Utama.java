@@ -2,7 +2,6 @@ package akademik;
 
 import java.io.*;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class Utama extends javax.swing.JFrame {

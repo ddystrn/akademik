@@ -53,7 +53,9 @@ public class Mesin {
         try {
             System.out.println("===== Mulai input excel khs ke sql =====");
             Sheet s = null;
-            Koneksi k = new Koneksi();
+            String nim = null;
+            NumberFormat nf = NumberFormat.getInstance();
+            akademik.Koneksi k = new akademik.Koneksi();
             File file = new File(pathFile);
             try (FileInputStream input = new FileInputStream(file)) {
                 System.out.println("Path File: " + file);
@@ -64,11 +66,32 @@ public class Mesin {
                     popup(e.getMessage());
                 }
                 Row row;
+                Row kosong;
+                int ipkr = -1;
                 Row nimrow = s.getRow(0);
                 Row namarow = s.getRow(1);
-                Row ipkrow = s.getRow(s.getLastRowNum() - 1);
+
                 String nama = null;
                 double ipk = 0;
+                int last = 1;
+                int startFrom = 5;
+
+                System.out.println("Last Row: " + (s.getLastRowNum() + 1));
+                for (int i = 0; i <= s.getLastRowNum(); i++) {
+                    kosong = s.getRow(i);
+                    if (kosong == null) {
+                        last++;
+                        ipkr++;
+                    } else if (kosong.getCell(0).getCellType() == CellType.BLANK) {
+                        last++;
+                        ipkr++;
+                    } else if (getCellValueAsString(kosong.getCell(0)).isEmpty()) {
+                        last++;
+                        ipkr++;
+                    }
+                }
+                System.out.println("Row/Cell A kosong: " + (ipkr + 1));
+                Row ipkrow = s.getRow(s.getLastRowNum() - ipkr);
                 try {
                     nim = nimrow.getCell(1).getStringCellValue().replace(": ", "");
                     nama = ((namarow.getCell(1).getStringCellValue()).replace(": ", "")).replace("'", "`");
@@ -76,10 +99,11 @@ public class Mesin {
                 } catch (Exception e) {
                     popup(e.getMessage());
                 }
-                int startFrom = 5;
+
                 String sqlmahasiswa = "INSERT INTO MAHASISWA VALUES('" + nim + "','" + nama + "','" + ipk + "')";
                 k.eksekusi(sqlmahasiswa);
-                for (int i = startFrom - 1; i <= s.getLastRowNum() - 3; i++) {
+
+                for (int i = startFrom - 1; i <= s.getLastRowNum() - last; i++) {
                     row = s.getRow(i);
 
                     int kode_mk = (int) row.getCell(1).getNumericCellValue();
@@ -89,9 +113,9 @@ public class Mesin {
                     String nilai_huruf = row.getCell(5).getStringCellValue();
                     double sks_nilai_angka = nf.parse(getCellValueAsString(row.getCell(6)).replace(".", ",")).doubleValue();
 
-                    String sql = "INSERT INTO KHS VALUES('" + nim + "','" 
-                            + kode_mk + "','" + nama_mk + "','" + sks + "','" 
-                            + nilai_angka + "','" + nilai_huruf + "','" 
+                    String sql = "INSERT INTO KHS VALUES('" + nim + "','"
+                            + kode_mk + "','" + nama_mk + "','" + sks + "','"
+                            + nilai_angka + "','" + nilai_huruf + "','"
                             + sks_nilai_angka + "')";
                     k.eksekusi(sql);
                     System.out.println("Import row: " + kode_mk);
