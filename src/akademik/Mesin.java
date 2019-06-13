@@ -89,7 +89,10 @@ public class Mesin {
                     String nilai_huruf = row.getCell(5).getStringCellValue();
                     double sks_nilai_angka = nf.parse(getCellValueAsString(row.getCell(6)).replace(".", ",")).doubleValue();
 
-                    String sql = "INSERT INTO KHS VALUES('" + nim + "','" + kode_mk + "','" + nama_mk + "','" + sks + "','" + nilai_angka + "','" + nilai_huruf + "','" + sks_nilai_angka + "')";
+                    String sql = "INSERT INTO KHS VALUES('" + nim + "','" 
+                            + kode_mk + "','" + nama_mk + "','" + sks + "','" 
+                            + nilai_angka + "','" + nilai_huruf + "','" 
+                            + sks_nilai_angka + "')";
                     k.eksekusi(sql);
                     System.out.println("Import row: " + kode_mk);
                 }
@@ -160,12 +163,23 @@ public class Mesin {
     public void eksekusi() {
         try {
             Koneksi k = new Koneksi();
-            String lulus = "INSERT INTO konversi SELECT * FROM (SELECT k.nim_mhs, p.kode_mk_alias, p.nama_mk_alias, p.sks_alias, max(k.nilai_angka) as nilai_angka, min(k.nilai_huruf) as nilai_huruf, k.sks_nilai_angka from khs k JOIN pemasaran p ON k.kode_mk = p.kode_mk GROUP BY p.kode_mk_alias) AS tabel WHERE nilai_angka < '2.0'";
+            String hapusKodeMkAlias0Khs = "DELETE k FROM khs k JOIN pemasaran p on"
+                    + " k.kode_mk = p.kode_mk WHERE p.kode_mk_alias='0'";
+            k.eksekusi(hapusKodeMkAlias0Khs);
+            String lulus = "INSERT INTO konversi SELECT * FROM (SELECT"
+                    + " k.nim_mhs, p.kode_mk_alias, p.nama_mk_alias,"
+                    + " p.sks_alias, max(k.nilai_angka) as nilai_angka,"
+                    + " min(k.nilai_huruf) as nilai_huruf, k.sks_nilai_angka"
+                    + " from khs k JOIN pemasaran p ON k.kode_mk = p.kode_mk"
+                    + " GROUP BY p.kode_mk_alias) AS tabel WHERE nilai_angka < '2.0'";
             k.eksekusi(lulus);
             String hapusPemasaran = "DELETE p from pemasaran p join (SELECT kode_mk_alias FROM"
                     + " pemasaran p2 WHERE kode_mk IN (SELECT kode_mk FROM khs)) pp"
                     + " on p.kode_mk_alias = pp.kode_mk_alias";
             k.eksekusi(hapusPemasaran);
+            String hapusKodeMkAlias0Pemasaran="DELETE FROM pemasaran WHERE"
+                    + " kode_mk_alias='0'";
+            k.eksekusi(hapusKodeMkAlias0Pemasaran);
             k.tutup();
             System.out.println("Berhasil konversi mata kuliah belum lulus");
             mataKuliahPilihan();
