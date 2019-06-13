@@ -53,9 +53,7 @@ public class Mesin {
         try {
             System.out.println("===== Mulai input excel khs ke sql =====");
             Sheet s = null;
-            String nim = null;
-            NumberFormat nf = NumberFormat.getInstance();
-            akademik.Koneksi k = new akademik.Koneksi();
+            Koneksi k = new Koneksi();
             File file = new File(pathFile);
             try (FileInputStream input = new FileInputStream(file)) {
                 System.out.println("Path File: " + file);
