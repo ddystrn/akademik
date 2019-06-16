@@ -6,8 +6,6 @@ import java.nio.file.*;
 import java.sql.SQLException;
 import java.text.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -65,35 +63,27 @@ public class Mesin {
                 }
                 Row row;
                 Row kosong;
-                int ipkr = -1;
+                int ipkr = 0;
                 Row nimrow = s.getRow(0);
                 Row namarow = s.getRow(1);
 
                 String nama = null;
                 double ipk = 0;
-                int last = 1;
+                int last = -1;
                 int startFrom = 5;
 
                 System.out.println("Last Row: " + (s.getLastRowNum() + 1));
                 for (int i = 0; i <= s.getLastRowNum(); i++) {
                     kosong = s.getRow(i);
-                    if (kosong == null) {
+                    if (kosong == null || kosong.getCell(1)==null || getCellValueAsString(kosong.getCell(1)).isEmpty()) {
                         last++;
-                        ipkr++;
-                    } else if (kosong.getCell(0).getCellType() == CellType.BLANK) {
-                        last++;
-                        ipkr++;
-                    } else if (getCellValueAsString(kosong.getCell(0)).isEmpty()) {
-                        last++;
-                        ipkr++;
                     }
                 }
-                System.out.println("Row/Cell A kosong: " + (ipkr + 1));
-                Row ipkrow = s.getRow(s.getLastRowNum() - ipkr);
+                Row ipkrow = s.getRow((s.getLastRowNum()-last)+2);
                 try {
                     nim = nimrow.getCell(1).getStringCellValue().replace(": ", "");
                     nama = ((namarow.getCell(1).getStringCellValue()).replace(": ", "")).replace("'", "`");
-                    ipk = ipkrow.getCell(3).getNumericCellValue();
+                    ipk = nf.parse(getCellValueAsString(ipkrow.getCell(3))).doubleValue();
                 } catch (Exception e) {
                     popup(e.getMessage());
                 }
@@ -107,9 +97,9 @@ public class Mesin {
                     int kode_mk = (int) row.getCell(1).getNumericCellValue();
                     String nama_mk = (row.getCell(2).getStringCellValue()).replace("'", "`");
                     int sks = (int) row.getCell(3).getNumericCellValue();
-                    double nilai_angka = nf.parse(getCellValueAsString(row.getCell(4)).replace(".", ",")).doubleValue();
+                    double nilai_angka = nf.parse(getCellValueAsString(row.getCell(4))).doubleValue();
                     String nilai_huruf = row.getCell(5).getStringCellValue();
-                    double sks_nilai_angka = nf.parse(getCellValueAsString(row.getCell(6)).replace(".", ",")).doubleValue();
+                    double sks_nilai_angka = nf.parse(getCellValueAsString(row.getCell(6))).doubleValue();
 
                     String sql = "INSERT INTO KHS VALUES('" + nim + "','"
                             + kode_mk + "','" + nama_mk + "','" + sks + "','"
@@ -474,8 +464,7 @@ public class Mesin {
                     break;
                 case NUMERIC:
                     Double value = cell.getNumericCellValue();
-                    Long longvalue = value.longValue();
-                    strCellValue = longvalue.toString();
+                    strCellValue = value.toString();
                     break;
                 case BOOLEAN:
                     strCellValue = Boolean.toString(cell.getBooleanCellValue());
