@@ -63,7 +63,6 @@ public class Mesin {
                 }
                 Row row;
                 Row kosong;
-                int ipkr = 0;
                 Row nimrow = s.getRow(0);
                 Row namarow = s.getRow(1);
 
