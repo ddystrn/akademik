@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 12 Jun 2019 pada 12.04
+-- Waktu pembuatan: 18 Jun 2019 pada 15.49
 -- Versi server: 10.1.40-MariaDB
 -- Versi PHP: 7.3.5
 
@@ -36,6 +36,32 @@ CREATE TABLE `khs` (
   `nilai_angka` double DEFAULT NULL,
   `nilai_huruf` varchar(2) DEFAULT NULL,
   `sks_nilai_angka` double DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `khslulus`
+--
+
+CREATE TABLE `khslulus` (
+  `kode_mk` int(7) NOT NULL,
+  `nilai_angka` double DEFAULT NULL,
+  `nilai_huruf` varchar(2) DEFAULT NULL,
+  `kode_mk_alias` int(7) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `khstidaklulus`
+--
+
+CREATE TABLE `khstidaklulus` (
+  `kode_mk` int(7) NOT NULL,
+  `nilai_angka` double DEFAULT NULL,
+  `nilai_huruf` varchar(2) DEFAULT NULL,
+  `kode_mk_alias` int(7) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -90,6 +116,18 @@ CREATE TABLE `pemasaran` (
 -- Indeks untuk tabel `khs`
 --
 ALTER TABLE `khs`
+  ADD PRIMARY KEY (`kode_mk`);
+
+--
+-- Indeks untuk tabel `khslulus`
+--
+ALTER TABLE `khslulus`
+  ADD PRIMARY KEY (`kode_mk`);
+
+--
+-- Indeks untuk tabel `khstidaklulus`
+--
+ALTER TABLE `khstidaklulus`
   ADD PRIMARY KEY (`kode_mk`);
 
 --
