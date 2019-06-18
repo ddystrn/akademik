@@ -36,10 +36,14 @@ public class Mesin {
             String tabelKonversi = "DELETE FROM konversi";
             String tabelMahasiswa = "DELETE FROM mahasiswa";
             String tabelPemasaran = "DELETE FROM pemasaran";
+            String tabelKhsLulus = "DELETE FROM khslulus";
+            String tabelKhsTidakLulus = "DELETE FROM khstidaklulus";
             k.eksekusi(tabelKhs);
             k.eksekusi(tabelKonversi);
             k.eksekusi(tabelMahasiswa);
             k.eksekusi(tabelPemasaran);
+            k.eksekusi(tabelKhsLulus);
+            k.eksekusi(tabelKhsTidakLulus);
             k.tutup();
             inputExcelKeSQL();
         } catch (ClassNotFoundException | SQLException ex) {
@@ -165,9 +169,45 @@ public class Mesin {
             }
             System.out.println("Berhasil impor excel pemasaran ke tabel sql");
             System.out.println("===== Selesai input excel pemasaran ke sql =====");
-            eksekusi();
+            replaceNilaiKHSOldKodeMKwithNewKodeMK();
         } catch (ClassNotFoundException | SQLException ex) {
             popup(ex.getMessage());
+        }
+    }
+    
+    public void replaceNilaiKHSOldKodeMKwithNewKodeMK(){
+        try {
+            Koneksi k = new Koneksi();
+            String insertLulus = "INSERT INTO khslulus SELECT k.kode_mk,"
+                    + " k.nilai_angka, k.nilai_huruf, p.kode_mk_alias FROM khs"
+                    + " k JOIN pemasaran p ON k.kode_mk = p.kode_mk WHERE"
+                    + " k.nilai_angka > '2.0' GROUP BY k.kode_mk";
+            k.eksekusi(insertLulus);
+            String insertTidakLulus = "INSERT INTO khstidaklulus SELECT"
+                    + " k.kode_mk, k.nilai_angka, k.nilai_huruf,"
+                    + " p.kode_mk_alias FROM khs k JOIN pemasaran p ON"
+                    + " k.kode_mk = p.kode_mk WHERE k.nilai_angka < '2.0'"
+                    + " GROUP BY k.kode_mk";
+            k.eksekusi(insertTidakLulus);
+            String updateNilaiTidakLulus = "UPDATE khstidaklulus t SET t.nilai_angka"
+                    + " = (SELECT l.nilai_angka FROM khslulus l WHERE"
+                    + " t.kode_mk_alias = l.kode_mk_alias), t.nilai_huruf ="
+                    + " (SELECT l.nilai_huruf FROM khslulus l WHERE"
+                    + " t.kode_mk_alias = l.kode_mk_alias) WHERE"
+                    + " t.kode_mk_alias IN (SELECT kode_mk_alias FROM khslulus)";
+            k.eksekusi(updateNilaiTidakLulus);
+            String updateNilaiKHS = "UPDATE khs k SET k.nilai_angka = (SELECT"
+                    + " t.nilai_angka FROM khstidaklulus t WHERE t.kode_mk ="
+                    + " k.kode_mk), k.nilai_huruf = (SELECT t.nilai_huruf FROM"
+                    + " khstidaklulus t WHERE t.kode_mk = k.kode_mk),"
+                    + " k.sks_nilai_angka = (k.sks * k.nilai_angka)"
+                    + " WHERE k.kode_mk IN (SELECT t.kode_mk FROM khstidaklulus"
+                    + " t)";
+            k.eksekusi(updateNilaiKHS);
+            k.tutup();
+            eksekusi();
+        } catch (ClassNotFoundException | SQLException e) {
+            popup(e.getMessage());
         }
     }
 
