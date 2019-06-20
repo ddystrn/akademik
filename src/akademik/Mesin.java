@@ -181,10 +181,12 @@ public class Mesin {
     public void lulusKHS() {
         try {
             Koneksi k = new Koneksi();
-            String insertLulus = "INSERT INTO khslulus SELECT k.kode_mk,"
-                    + " k.nilai_angka, k.nilai_huruf, p.kode_mk_alias FROM khs"
-                    + " k JOIN pemasaran p ON k.kode_mk = p.kode_mk WHERE"
-                    + " k.nilai_angka > '2.0' GROUP BY k.kode_mk";
+            String insertLulus = "INSERT INTO khslulus SELECT * FROM ( SELECT"
+                    + " k.kode_mk, k.nilai_angka, k.nilai_huruf, p.kode_mk_alias"
+                    + " FROM khs k JOIN pemasaran p ON k.kode_mk = p.kode_mk"
+                    + " WHERE k.nilai_angka > '2.0' GROUP BY k.kode_mk ORDER BY"
+                    + " p.kode_mk_alias ASC, k.nilai_angka DESC, k.nilai_huruf"
+                    + " ASC ) as lulus GROUP BY kode_mk_alias";
             k.eksekusi(insertLulus);
             String insertTidakLulus = "INSERT INTO khstidaklulus SELECT"
                     + " k.kode_mk, k.nilai_angka, k.nilai_huruf,"
@@ -427,7 +429,7 @@ public class Mesin {
             } catch (IOException ex) {
                 popup(ex.getMessage());
             }
-            popup("Konversi berhasil! Silakan cek di direktori yang sama dengan file asal.");
+            popup("Konversi berhasil!\nSilakan cek di direktori yang sama dengan file asal.");
         } catch (ClassNotFoundException | SQLException ex) {
             popup(ex.getMessage());
         }
