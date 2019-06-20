@@ -22,6 +22,8 @@ public class Mesin {
     private String nim;
     private String pathFile;
     private String pathFolder;
+    private List<String> kodeLulus = new ArrayList<>();
+    private String[] arrayLulus;
     NumberFormat nf = NumberFormat.getInstance();
 
     //awal proses konversi
@@ -32,18 +34,21 @@ public class Mesin {
     public void clearAll() {
         try {
             Koneksi k = new Koneksi();
-            String tabelKhs = "DELETE FROM khs";
-            String tabelKonversi = "DELETE FROM konversi";
-            String tabelMahasiswa = "DELETE FROM mahasiswa";
-            String tabelPemasaran = "DELETE FROM pemasaran";
-            String tabelKhsLulus = "DELETE FROM khslulus";
-            String tabelKhsTidakLulus = "DELETE FROM khstidaklulus";
-            k.eksekusi(tabelKhs);
-            k.eksekusi(tabelKonversi);
-            k.eksekusi(tabelMahasiswa);
-            k.eksekusi(tabelPemasaran);
-            k.eksekusi(tabelKhsLulus);
-            k.eksekusi(tabelKhsTidakLulus);
+            String[] clearAll = {
+                "DELETE FROM khs",
+                "DELETE FROM khslulus",
+                "DELETE FROM khstidaklulus",
+                "DELETE FROM konversi",
+                "DELETE FROM mahasiswa",
+                "DELETE FROM pemasaran",
+                "DELETE FROM pemasaranmk1",
+                "DELETE FROM pemasaranmk2",
+                "DELETE FROM pemasarannew",
+                "DELETE FROM skipmkpilihan"
+            };
+            for (int i = 0; i < clearAll.length; i++) {
+                k.eksekusi(clearAll[i]);
+            }
             k.tutup();
             inputExcelKeSQL();
         } catch (ClassNotFoundException | SQLException ex) {
@@ -78,16 +83,16 @@ public class Mesin {
                 System.out.println("Last Row: " + (s.getLastRowNum() + 1));
                 for (int i = 0; i <= s.getLastRowNum(); i++) {
                     kosong = s.getRow(i);
-                    if (kosong == null || kosong.getCell(1)==null || getCellValueAsString(kosong.getCell(1)).isEmpty()) {
+                    if (kosong == null || kosong.getCell(1) == null || getCellValueAsString(kosong.getCell(1)).isEmpty()) {
                         last++;
                     }
                 }
-                Row ipkrow = s.getRow((s.getLastRowNum()-last)+2);
+                Row ipkrow = s.getRow((s.getLastRowNum() - last) + 2);
                 try {
                     nim = nimrow.getCell(1).getStringCellValue().replace(": ", "");
                     nama = ((namarow.getCell(1).getStringCellValue()).replace(": ", "")).replace("'", "`");
                     ipk = nf.parse(getCellValueAsString(ipkrow.getCell(3))).doubleValue();
-                } catch (Exception e) {
+                } catch (ParseException e) {
                     popup(e.getMessage());
                 }
 
@@ -169,13 +174,13 @@ public class Mesin {
             }
             System.out.println("Berhasil impor excel pemasaran ke tabel sql");
             System.out.println("===== Selesai input excel pemasaran ke sql =====");
-            replaceNilaiKHSOldKodeMKwithNewKodeMK();
+            lulusKHS();
         } catch (ClassNotFoundException | SQLException ex) {
             popup(ex.getMessage());
         }
     }
-    
-    public void replaceNilaiKHSOldKodeMKwithNewKodeMK(){
+
+    public void lulusKHS() {
         try {
             Koneksi k = new Koneksi();
             String insertLulus = "INSERT INTO khslulus SELECT k.kode_mk,"
@@ -205,106 +210,97 @@ public class Mesin {
                     + " t)";
             k.eksekusi(updateNilaiKHS);
             k.tutup();
-            eksekusi();
+            khsKeKonversi();
         } catch (ClassNotFoundException | SQLException e) {
             popup(e.getMessage());
         }
     }
 
-    public void eksekusi() {
+    public void khsKeKonversi() {
         try {
             Koneksi k = new Koneksi();
-            String hapusKodeMkAlias0Khs = "DELETE k FROM khs k JOIN pemasaran p on"
-                    + " k.kode_mk = p.kode_mk WHERE p.kode_mk_alias='0'";
-            k.eksekusi(hapusKodeMkAlias0Khs);
-            String lulus = "INSERT INTO konversi SELECT * FROM (SELECT"
-                    + " k.nim_mhs, p.kode_mk_alias, p.nama_mk_alias,"
-                    + " p.sks_alias, max(k.nilai_angka) as nilai_angka,"
-                    + " min(k.nilai_huruf) as nilai_huruf, k.sks_nilai_angka"
-                    + " from khs k JOIN pemasaran p ON k.kode_mk = p.kode_mk"
-                    + " GROUP BY p.kode_mk_alias) AS tabel WHERE nilai_angka < '2.0'";
-            k.eksekusi(lulus);
-            String hapusPemasaran = "DELETE p from pemasaran p join (SELECT kode_mk_alias FROM"
-                    + " pemasaran p2 WHERE kode_mk IN (SELECT kode_mk FROM khs)) pp"
-                    + " on p.kode_mk_alias = pp.kode_mk_alias";
-            k.eksekusi(hapusPemasaran);
-            String hapusKodeMkAlias0Pemasaran="DELETE FROM pemasaran WHERE"
-                    + " kode_mk_alias='0'";
-            k.eksekusi(hapusKodeMkAlias0Pemasaran);
+            String sql = "INSERT INTO konversi SELECT k.nim_mhs,"
+                    + " p.kode_mk_alias, p.nama_mk_alias, p.sks_alias,"
+                    + " k.nilai_angka, k.nilai_huruf, k.sks_nilai_angka FROM"
+                    + " khs k JOIN pemasaran p ON k.kode_mk = p.kode_mk WHERE"
+                    + " k.nilai_angka < '2.0' GROUP BY p.kode_mk_alias";
+            k.eksekusi(sql);
             k.tutup();
-            System.out.println("Berhasil konversi mata kuliah belum lulus");
-            mataKuliahPilihan();
-        } catch (ClassNotFoundException | SQLException e) {
-            popup(e.getMessage());
-        }
-    }
-
-    public void mataKuliahPilihan() {
-        try {
-            Koneksi k = new Koneksi();
-            String[] khs = null;
-            BufferedReader mkPilihan = null;
-            for (int p = 1; p <= 2; p++) {
-                try {
-                    mkPilihan = new BufferedReader(new FileReader("mkpilihan" + p + ".txt"));
-                    String str;
-                    List<String> l = new ArrayList<String>();
-                    while ((str = mkPilihan.readLine()) != null) {
-                        l.add(str);
-                    }
-                    String[] pemasaran = l.toArray(new String[0]);
-                    List<String> m = new ArrayList<String>();
-                    System.out.println("Kode MK Pilihan " + p + " Pemasaran:");
-                    for (int i = 0; i < pemasaran.length; i++) {
-                        String sql = "SELECT kode_mk_alias from pemasaran where kode_mk_alias='" + pemasaran[i] + "' group by kode_mk_alias";
-                        k.select(sql);
-                        while (k.tampilData()) {
-                            m.add(k.rs().getString("kode_mk_alias"));
-                        }
-                        System.out.println(pemasaran[i]);
-                    }
-                    khs = m.toArray(new String[0]);
-                    System.out.println("Kode MK Pilihan " + p + " KHS:");
-                    for (int i = 0; i < khs.length; i++) {
-                        System.out.println(khs[i]);
-                    }
-                    if (Arrays.equals(pemasaran, khs)) {
-                        System.out.println("Sama");
-                    } else {
-                        System.out.println("Tidak sama");
-                        for (int i = 0; i < khs.length; i++) {
-                            String sql = "DELETE FROM pemasaran WHERE kode_mk_alias='" + khs[i] + "'";
-                            k.eksekusi(sql);
-                        }
-                    }
-                } catch (FileNotFoundException ex) {
-                    popup(ex.getMessage());
-                } catch (IOException ex) {
-                    popup(ex.getMessage());
-                } finally {
-                    try {
-                        mkPilihan.close();
-                    } catch (IOException ex) {
-                        popup(ex.getMessage());
-                    }
-                }
-            }
-            k.tutup();
-            konversi();
+            mkPilihan();
         } catch (ClassNotFoundException | SQLException ex) {
             popup(ex.getMessage());
         }
     }
 
-    public void konversi() {
+    public void mkPilihan() {
         try {
             Koneksi k = new Koneksi();
-            String eksekusi = "INSERT INTO konversi SELECT m.nim_mhs,"
-                    + " p.kode_mk_alias, p.nama_mk_alias, p.sks_alias,"
-                    + " null as nilai_angka, null as nilai_huruf,"
-                    + " null as sks_nilai_angka FROM pemasaran p JOIN mahasiswa m"
-                    + " GROUP by p.kode_mk_alias";
-            k.eksekusi(eksekusi);
+            BufferedReader mkPilihan = null;
+            for (int i = 1; i <= 2; i++) {
+                try {
+                    mkPilihan = new BufferedReader(new FileReader("mkpilihan" + i + ".txt"));
+                    String str;
+                    List<String> l = new ArrayList<>();
+                    while ((str = mkPilihan.readLine()) != null) {
+                        l.add(str);
+                    }
+                    String[] pemasaranmk = l.toArray(new String[0]);
+                    System.out.println("Kode MK Pilihan " + i + " :");
+                    for (int j = 0; j < pemasaranmk.length; j++) {
+                        String inputmkpilihan = "INSERT INTO pemasaranmk" + i + ""
+                                + " SELECT * FROM pemasaran WHERE kode_mk_alias='"
+                                + pemasaranmk[j] + "'";
+                        k.eksekusi(inputmkpilihan);
+                        System.out.println(pemasaranmk[j]);
+                    }
+                    String selectnilaimkpilihan = "SELECT k.kode_mk,"
+                            + " k.nilai_angka, p.kode_mk_alias FROM khs k JOIN"
+                            + " pemasaranmk" + i + " p ON k.kode_mk = p.kode_mk WHERE"
+                            + " k.nilai_angka >= '2.0' GROUP BY k.kode_mk";
+                    k.select(selectnilaimkpilihan);
+                    if (!k.tampilData()) {
+                        String mkPilihanKeNew = "INSERT INTO pemasarannew SELECT"
+                                + " * FROM pemasaranmk" + i + " pmk WHERE"
+                                + " pmk.kode_mk_alias NOT IN (SELECT k.kode_mk"
+                                + " FROM konversi k)";
+                        k.eksekusi(mkPilihanKeNew);
+                    } else {
+                        System.out.println("Kode MK Pilihan " + i + " Lulus");
+                        for (int j = 0; j < pemasaranmk.length; j++) {
+                            String kodeMkPilihan = "INSERT INTO skipmkpilihan"
+                                    + " VALUES ('" + pemasaranmk[j] + "')";
+                            k.eksekusi(kodeMkPilihan);
+                        }
+                    }
+                } catch (IOException | SQLException e) {
+                }
+            }
+            k.tutup();
+            pemasaranToNew();
+        } catch (ClassNotFoundException | SQLException e) {
+            popup(e.getMessage());
+        }
+    }
+
+    public void pemasaranToNew() {
+        try {
+            Koneksi k = new Koneksi();
+            String sql = "INSERT INTO pemasarannew SELECT * FROM pemasaran p"
+                    + " WHERE p.kode_mk_alias NOT IN ( SELECT p.kode_mk_alias"
+                    + " FROM khs k JOIN pemasaran p ON k.kode_mk = p.kode_mk)"
+                    + " AND p.kode_mk_alias NOT IN ( SELECT p1.kode_mk_alias"
+                    + " FROM pemasaranmk1 p1 JOIN pemasaran p ON"
+                    + " p1.kode_mk_alias = p.kode_mk_alias) AND p.kode_mk_alias"
+                    + " NOT IN ( SELECT p2.kode_mk_alias FROM pemasaranmk2 p2"
+                    + " JOIN pemasaran p ON p2.kode_mk_alias = p.kode_mk_alias)"
+                    + " AND p.kode_mk_alias != '0' GROUP BY p.kode_mk_alias";
+            k.eksekusi(sql);
+            String sqlKonversi = "INSERT INTO konversi SELECT m.nim_mhs,"
+                    + " p.kode_mk_alias, p.nama_mk_alias, p.sks_alias, null as"
+                    + " nilai_angka, null as nilai_huruf, null as"
+                    + " sks_nilai_angka FROM pemasarannew p JOIN mahasiswa m"
+                    + " GROUP BY p.kode_mk_alias";
+            k.eksekusi(sqlKonversi);
             k.tutup();
             exportSQLkeXLSX();
         } catch (ClassNotFoundException | SQLException ex) {
@@ -346,7 +342,8 @@ public class Mesin {
             Cell sksnilaiHeader = r.createCell(6);
             sksnilaiHeader.setCellValue("SKS x Nilai Angka");
 
-            String sqlkonversi = "SELECT * FROM konversi";
+            String sqlkonversi = "SELECT * FROM konversi WHERE kode_mk NOT IN ("
+                    + " SELECT kode_mk FROM skipmkpilihan )";
             k.select(sqlkonversi);
             int row = 4;
             while (k.tampilData()) {
@@ -386,8 +383,11 @@ public class Mesin {
             Row t = s.createRow(row);
             Cell skstotal = t.createCell(3);
             Cell sksnilaitotal = t.createCell(6);
-            String sqltotalsks = "SELECT SUM(sks) total FROM konversi";
-            String sqltotalsksnilai = "SELECT SUM(sks_nilai_angka) total FROM konversi";
+            String sqltotalsks = "SELECT SUM(sks) total FROM konversi WHERE"
+                    + " kode_mk NOT IN ( SELECT kode_mk FROM skipmkpilihan )";
+            String sqltotalsksnilai = "SELECT SUM(sks_nilai_angka) total FROM"
+                    + " konversi WHERE kode_mk NOT IN ( SELECT kode_mk FROM"
+                    + " skipmkpilihan )";
             k.select(sqltotalsks);
             while (k.tampilData()) {
                 int skst = k.rs().getInt("total");
@@ -435,7 +435,7 @@ public class Mesin {
         }
     }
     //batas proses konversi
-    
+
     public void checkUpdate() {
         try {
             File p = new File(pemasaran);
