@@ -413,7 +413,7 @@ public class Mesin {
             while (k.tampilData()) {
                 nim = k.rs().getString("nim_mhs");
                 nimCell.setCellValue(": " + nim);
-                String nama = k.rs().getString("nama");
+                String nama = k.rs().getString("nama_mhs");
                 namaCell.setCellValue(": " + nama);
                 Double ipk = k.rs().getDouble("ipk");
                 ipkCell.setCellValue(ipk);
