@@ -22,8 +22,6 @@ public class Mesin {
     private String nim;
     private String pathFile;
     private String pathFolder;
-    private List<String> kodeLulus = new ArrayList<>();
-    private String[] arrayLulus;
     NumberFormat nf = NumberFormat.getInstance();
 
     //awal proses konversi
