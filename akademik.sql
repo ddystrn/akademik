@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 18 Jun 2019 pada 15.49
--- Versi server: 10.1.40-MariaDB
--- Versi PHP: 7.3.5
+-- Generation Time: Jun 20, 2019 at 02:46 AM
+-- Server version: 10.1.40-MariaDB
+-- PHP Version: 7.3.5
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -25,7 +25,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `khs`
+-- Table structure for table `khs`
 --
 
 CREATE TABLE `khs` (
@@ -41,7 +41,7 @@ CREATE TABLE `khs` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `khslulus`
+-- Table structure for table `khslulus`
 --
 
 CREATE TABLE `khslulus` (
@@ -54,7 +54,7 @@ CREATE TABLE `khslulus` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `khstidaklulus`
+-- Table structure for table `khstidaklulus`
 --
 
 CREATE TABLE `khstidaklulus` (
@@ -67,7 +67,7 @@ CREATE TABLE `khstidaklulus` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `konversi`
+-- Table structure for table `konversi`
 --
 
 CREATE TABLE `konversi` (
@@ -83,7 +83,7 @@ CREATE TABLE `konversi` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `mahasiswa`
+-- Table structure for table `mahasiswa`
 --
 
 CREATE TABLE `mahasiswa` (
@@ -95,7 +95,7 @@ CREATE TABLE `mahasiswa` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `pemasaran`
+-- Table structure for table `pemasaran`
 --
 
 CREATE TABLE `pemasaran` (
@@ -108,45 +108,127 @@ CREATE TABLE `pemasaran` (
   `sks_alias` int(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pemasaranmk1`
+--
+
+CREATE TABLE `pemasaranmk1` (
+  `no` int(4) NOT NULL,
+  `kode_mk` int(7) DEFAULT NULL,
+  `nama_mk` varchar(100) DEFAULT NULL,
+  `sks` int(1) DEFAULT NULL,
+  `kode_mk_alias` int(7) DEFAULT NULL,
+  `nama_mk_alias` varchar(100) DEFAULT NULL,
+  `sks_alias` int(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pemasaranmk2`
+--
+
+CREATE TABLE `pemasaranmk2` (
+  `no` int(4) NOT NULL,
+  `kode_mk` int(7) DEFAULT NULL,
+  `nama_mk` varchar(100) DEFAULT NULL,
+  `sks` int(1) DEFAULT NULL,
+  `kode_mk_alias` int(7) DEFAULT NULL,
+  `nama_mk_alias` varchar(100) DEFAULT NULL,
+  `sks_alias` int(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pemasarannew`
+--
+
+CREATE TABLE `pemasarannew` (
+  `no` int(4) NOT NULL,
+  `kode_mk` int(7) DEFAULT NULL,
+  `nama_mk` varchar(100) DEFAULT NULL,
+  `sks` int(1) DEFAULT NULL,
+  `kode_mk_alias` int(7) DEFAULT NULL,
+  `nama_mk_alias` varchar(100) DEFAULT NULL,
+  `sks_alias` int(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `skipmkpilihan`
+--
+
+CREATE TABLE `skipmkpilihan` (
+  `kode_mk` int(7) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 --
 -- Indexes for dumped tables
 --
 
 --
--- Indeks untuk tabel `khs`
+-- Indexes for table `khs`
 --
 ALTER TABLE `khs`
   ADD PRIMARY KEY (`kode_mk`);
 
 --
--- Indeks untuk tabel `khslulus`
+-- Indexes for table `khslulus`
 --
 ALTER TABLE `khslulus`
   ADD PRIMARY KEY (`kode_mk`);
 
 --
--- Indeks untuk tabel `khstidaklulus`
+-- Indexes for table `khstidaklulus`
 --
 ALTER TABLE `khstidaklulus`
   ADD PRIMARY KEY (`kode_mk`);
 
 --
--- Indeks untuk tabel `konversi`
+-- Indexes for table `konversi`
 --
 ALTER TABLE `konversi`
   ADD PRIMARY KEY (`kode_mk`);
 
 --
--- Indeks untuk tabel `mahasiswa`
+-- Indexes for table `mahasiswa`
 --
 ALTER TABLE `mahasiswa`
   ADD PRIMARY KEY (`nim_mhs`);
 
 --
--- Indeks untuk tabel `pemasaran`
+-- Indexes for table `pemasaran`
 --
 ALTER TABLE `pemasaran`
   ADD PRIMARY KEY (`no`);
+
+--
+-- Indexes for table `pemasaranmk1`
+--
+ALTER TABLE `pemasaranmk1`
+  ADD PRIMARY KEY (`no`);
+
+--
+-- Indexes for table `pemasaranmk2`
+--
+ALTER TABLE `pemasaranmk2`
+  ADD PRIMARY KEY (`no`);
+
+--
+-- Indexes for table `pemasarannew`
+--
+ALTER TABLE `pemasarannew`
+  ADD PRIMARY KEY (`no`);
+
+--
+-- Indexes for table `skipmkpilihan`
+--
+ALTER TABLE `skipmkpilihan`
+  ADD PRIMARY KEY (`kode_mk`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
