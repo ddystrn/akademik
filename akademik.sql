@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 20, 2019 at 02:46 AM
+-- Generation Time: Jun 20, 2019 at 03:00 AM
 -- Server version: 10.1.40-MariaDB
 -- PHP Version: 7.3.5
 
@@ -88,7 +88,7 @@ CREATE TABLE `konversi` (
 
 CREATE TABLE `mahasiswa` (
   `nim_mhs` varchar(8) NOT NULL,
-  `nama` varchar(100) NOT NULL,
+  `nama_mhs` varchar(100) NOT NULL,
   `ipk` double NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
