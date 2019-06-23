@@ -223,7 +223,8 @@ public class Mesin {
                     + " p.kode_mk_alias, p.nama_mk_alias, p.sks_alias,"
                     + " k.nilai_angka, k.nilai_huruf, k.sks_nilai_angka FROM"
                     + " khs k JOIN pemasaran p ON k.kode_mk = p.kode_mk WHERE"
-                    + " k.nilai_angka < '2.0' GROUP BY p.kode_mk_alias";
+                    + " k.nilai_angka < '2.0' AND p.kode_mk_alias != '0'"
+                    + " GROUP BY p.kode_mk_alias";
             k.eksekusi(sql);
             k.tutup();
             mkPilihan();
